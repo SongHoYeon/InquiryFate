@@ -44,15 +44,14 @@ const DatabaseItem = ({info, onItemPress, isChecked}) => {
         ) : null;
     };
 
-
     return (
         <TouchableOpacity style={styles.btn_item} onPress={onItemPress}>
             <View style={styles.name}>
                 <Text style={styles.name_text}>{info.name}</Text>
             </View>
-            {getBornDate(info.solar, info.bornDate.year, info.bornDate.month, info.bornDate.day)}
+            {getBornDate(info.solar, info.bornDate_year, info.bornDate_month, info.bornDate_day)}
             <View style={styles.born}>
-                <Text style={styles.born_text}>{info.bornTime.hour}:{info.bornTime.min}</Text>
+                <Text style={styles.born_text}>{info.bornTime_hour}:{info.bornTime_min}</Text>
                 <Text style={styles.born_text}>{info.gender === 0 ? "남자" : "여자"}</Text>
             </View>
             <View style={styles.save}>

@@ -7,67 +7,18 @@ import {
     TouchableOpacity,
     ScrollView,
 } from 'react-native';
-import { useRef } from 'react/cjs/react.development';
+import { useEffect, useRef } from 'react/cjs/react.development';
 import DatabaseItem from '../components/database/DatabaseItem';
-import {DefaultModalPopup} from '../components/etc/ModalPopup';
+import { DefaultModalPopup } from '../components/etc/ModalPopup';
+import SocketInstance from '../components/Socket/Socket';
 
-const DatabaseScreen = () => {
-    const tempDatas = [
-        {
-            name: "임시데이터",
-            gender: 0,
-            solar: 0,
-            job: 0,
-            bornDate: {
-                year: "1993",
-                month: "04",
-                day: "21"
-            },
-            bornTime: {
-                hour: "05",
-                min: "30"
-            },
-            saveTime: "2020-01-01"
-        },
-        {
-            name: "송호연",
-            gender: 0,
-            solar: 0,
-            job: 0,
-            bornDate: {
-                year: "1993",
-                month: "04",
-                day: "02"
-            },
-            bornTime: {
-                hour: "05",
-                min: "30"
-            },
-            saveTime: "2020-01-01"
-        },
-        {
-            name: "가나다",
-            gender: 1,
-            solar: 1,
-            job: 1,
-            bornDate: {
-                year: "1993",
-                month: "01",
-                day: "01"
-            },
-            bornTime: {
-                hour: "05",
-                min: "30"
-            },
-            saveTime: "2020-01-01"
-        },
-    ];
+const DatabaseScreen = ({ route, navigation }) => {
+    const { userDataRes } = route.params;
     const [currentSelectedItem, setCurrentSelectedItem] = useState(-1);
     const [defaultModalPopupVisible, setDefaultModalPopupVisible] = useState(false);
     const defaultPopupMessage = useRef("");
 
     const onPress = (idx) => {
-        setCurrentSelectedItem(idx);
     }
 
     return (
@@ -112,15 +63,12 @@ const DatabaseScreen = () => {
             <ScrollView style={styles.contents}>
                 <View style={styles.data_list}>
                     {
-                        tempDatas.map((item, i) => {
+                        userDataRes.map((item, i) => {
                             let isChecked = currentSelectedItem === i ? true : false;
-                            return <DatabaseItem key={i} info={item} onItemPress={() => onPress(i)} isChecked={isChecked} />
+                            return <DatabaseItem key={i} info={item} onItemPress={() => setCurrentSelectedItem(i)} isChecked={isChecked} />
                         })
                     }
                 </View>
-                {/* {users.map((item, i) => {
-                return <UserItem key={i} initialValue={item} onChange = {onChangeUserInfo} onRemove = {_removeUser} />
-            })} */}
             </ScrollView>
             <View style={styles.btn_area}>
                 <TouchableOpacity

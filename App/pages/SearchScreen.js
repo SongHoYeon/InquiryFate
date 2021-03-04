@@ -1,8 +1,4 @@
-// React Native Bottom Navigation
-// https://aboutreact.com/react-native-bottom-navigation/
-
 import * as React from 'react';
-
 import {
     View,
     Text,
@@ -14,6 +10,7 @@ import {
 } from 'react-native';
 import UserItem from '../components/search/UserItem';
 import { useRef, useState } from 'react/cjs/react.development';
+import * as socketUtil from '../components/Socket/Socket';
 
 const SearchScreen = () => {
     const initialUserInfo = {
@@ -73,11 +70,11 @@ const SearchScreen = () => {
                 <TouchableOpacity
                     style={styles.btn_search}
                     onPress={() => {
-                        users.map((item, i) => {
-                            // console.log("조회하기 : " + "이름 : " + item.name + " 성별 : " + item.gender + " 양/음력 : " + item.solar + " 직업 : " + item.job + " 출생년월 : " + JSON.stringify(item.bornDate) + " 시간 : " + JSON.stringify(item.bornTime))
-                            console.log(i + " : " + JSON.stringify(item))
-                            // alert("번호 : " + item.idx + "\n이름 : " + item.name + "\n성별 : " + item.gender + "\n양/음력 : " + item.solar + "\n직업 : " + item.job + "\n출생년월 : " + JSON.stringify(item.bornDate) + "\n시간 : " + JSON.stringify(item.bornTime))
-                        })
+                        socketUtil.RequestFate(users);
+                        // users.map((item, i) => {
+                        //     console.log("조회하기 : " + "이름 : " + item.name + " 성별 : " + item.gender + " 양/음력 : " + item.solar + " 직업 : " + item.job + " 출생년월 : " + JSON.stringify(item.bornDate) + " 시간 : " + JSON.stringify(item.bornTime))
+                        //     alert("번호 : " + item.idx + "\n이름 : " + item.name + "\n성별 : " + item.gender + "\n양/음력 : " + item.solar + "\n직업 : " + item.job + "\n출생년월 : " + JSON.stringify(item.bornDate) + "\n시간 : " + JSON.stringify(item.bornTime))
+                        // })
                     }}>
                     <Text style={styles.btn_text}>조회하기</Text>
                 </TouchableOpacity>
