@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "916123365205",
+    "project_id": "chouchou-7577f",
+    "storage_bucket": "chouchou-7577f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:916123365205:android:fb8190a22e35bd6eabc9dc",
+        "android_client_info": {
+          "package_name": "com.application"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "916123365205-d5qsjjmue7oodqutaffm3un2abamjl1d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPoV_0RC7zmGCt_6rP34aEQX0qIXctuqQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "916123365205-d5qsjjmue7oodqutaffm3un2abamjl1d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
