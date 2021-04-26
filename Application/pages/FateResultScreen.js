@@ -14,7 +14,7 @@ import holidayKR from "holiday-kr";
 import SocketInstance from '../components/Socket/Socket';
 import * as utils from "../components/etc/Util"
 import fateDB from '../assets/fate_.json'
-import Animated, { max } from 'react-native-reanimated';
+import Animated, { Easing, max } from 'react-native-reanimated';
 
 const FateResultScreen = ({ route, navigation }) => {
     let { usersData } = route.params;
@@ -186,21 +186,47 @@ const FateResultScreen = ({ route, navigation }) => {
     const currentDate = new Date();
     const threeYears = fateDB.fate.filter(fate => fate.cd_sy >= currentDate.getFullYear() - 1 && fate.cd_sy <= currentDate.getFullYear() + 1 && fate.cd_sd === (15).toString()).reverse();
 
-    const onFateItemPress = () => {
-
+    const flipAnimationArr = useRef(new Array());
+    const currentFlipCardIdx = useRef(-1);
+    const interpolateFrontArr = new Array();
+    const interpolateBackArr = new Array();
+    const RotateFrontArr = new Array();
+    const RotateBackArr = new Array();
+    for (let i = 0; i < 8; i++) {
+        flipAnimationArr.current[i] = new Animated.Value(0);
+        interpolateFrontArr[i] = flipAnimationArr.current[i].interpolate({
+            inputRange: [0, 180],
+            outputRange: ["0deg", "180deg"],
+        })
+        interpolateBackArr[i] = flipAnimationArr.current[i].interpolate({
+            inputRange: [0, 180],
+            outputRange: ["180deg", "360deg"],
+        })
+        RotateFrontArr[i] = {
+            transform: [
+                {
+                    rotateY: interpolateFrontArr[i],
+                },
+            ],
+        };
+        RotateBackArr[i] = {
+            transform: [
+                {
+                    rotateY: interpolateBackArr[i],
+                },
+            ],
+        };
     }
-    const animate = useRef(new Animated.Value(0));
-    const handleFlip = () => {
-        Animated.timing(animate.current, {
-            duration: 300,
+    const doAFlip = (idx) => {
+        currentFlipCardIdx.current = idx;
+        Animated.timing(flipAnimationArr.current[currentFlipCardIdx.current], {
+            duration: 500,
             toValue: 180,
+            easing: Easing.bounce,
             useNativeDriver: true,
         }).start();
-    }
-    const interpolationFront = animate.current.interpolate({
-        inputRange: [0, 180],
-        outputRange: ['0deg', '180deg'],
-    })
+    };
+
     const userDataItem = (user, fate, bigFate) => {
         let skyStartIdx_big = 0
         let earthStartIdx_big = 0;
@@ -408,38 +434,78 @@ const FateResultScreen = ({ route, navigation }) => {
                             <Text style={styles.uif_text}>{fate.hasOwnProperty("time") ? getSixChin(fate.time[0]) : ""}</Text>
                         </View>
                         <View style={styles.uif_card_area}>
-                            <TouchableOpacity style={styles.uif_btn_card} onPress={onFateItemPress}>
+                            <TouchableOpacity style={styles.uif_btn_card} onPress={() => {
+                                doAFlip(0);
+                            }}>
                                 {
                                     fate.hasOwnProperty("time") ?
                                         fateCard.map(item => {
                                             return (item.name === fate.time[0] ?
-                                                <Image key={item.name} style={styles.uif_card_img} source={item.path} />
+                                                (
+                                                    <View key={item.name}>
+                                                        <Animated.View style={[RotateFrontArr[0], { backfaceVisibility: 'hidden' }]}>
+                                                            <Image style={styles.uif_card_img} source={require('../assets/FateCard/back.png')} />
+                                                        </Animated.View>
+                                                        <Animated.View style={[{ position: 'absolute', top: 0 }, { backfaceVisibility: 'hidden' }, RotateBackArr[0]]}>
+                                                            <Image style={styles.uif_card_img} source={item.path} />
+                                                        </Animated.View>
+                                                    </View>
+                                                )
                                                 : null)
                                         }) : null
                                 }
                             </TouchableOpacity>
                         </View>
                         <View style={styles.uif_card_area}>
-                            <TouchableOpacity style={styles.uif_btn_card} onPress={onFateItemPress}>
+                            <TouchableOpacity style={styles.uif_btn_card} onPress={() => {
+                                doAFlip(1);
+                            }}>
                                 {
                                     fate.hasOwnProperty("time") ?
                                         fateChangeArr.indexOf(fate.time[1]) !== -1 ?
                                             fateChangeTimeKeysArr[fateChangeArr.indexOf(fate.time[1])].includes(fate.cd_hmganjee[1]) ?
                                                 fateChangetimeCard.map(item => {
                                                     if (item.name === fate.time[1]) {
-                                                        return <Image key={item.name} style={styles.uif_card_img} source={item.path} />
+                                                        return (
+                                                            <View key={item.name}>
+                                                                <Animated.View style={[RotateFrontArr[1], { backfaceVisibility: 'hidden' }]}>
+                                                                    <Image style={styles.uif_card_img} source={require('../assets/FateCard/back.png')} />
+                                                                </Animated.View>
+                                                                <Animated.View style={[{ position: 'absolute', top: 0 }, { backfaceVisibility: 'hidden' }, RotateBackArr[1]]}>
+                                                                    <Image style={styles.uif_card_img} source={item.path} />
+                                                                </Animated.View>
+                                                            </View>
+                                                        )
                                                     }
                                                 })
                                                 :
                                                 fateCard.map(item => {
                                                     if (item.name === fate.time[1]) {
-                                                        return <Image key={item.name} style={styles.uif_card_img} source={item.path} />
+                                                        return (
+                                                            <View key={item.name}>
+                                                                <Animated.View style={[RotateFrontArr[1], { backfaceVisibility: 'hidden' }]}>
+                                                                    <Image style={styles.uif_card_img} source={require('../assets/FateCard/back.png')} />
+                                                                </Animated.View>
+                                                                <Animated.View style={[{ position: 'absolute', top: 0 }, { backfaceVisibility: 'hidden' }, RotateBackArr[1]]}>
+                                                                    <Image style={styles.uif_card_img} source={item.path} />
+                                                                </Animated.View>
+                                                            </View>
+                                                        )
                                                     }
                                                 })
                                             :
                                             fateCard.map(item => {
                                                 if (item.name === fate.time[1]) {
-                                                    return <Image key={item.name} style={styles.uif_card_img} source={item.path} />
+                                                    return (
+                                                        <View key={item.name}>
+                                                            <Animated.View style={[RotateFrontArr[1], { backfaceVisibility: 'hidden' }]}>
+                                                                <Image style={styles.uif_card_img} source={require('../assets/FateCard/back.png')} />
+                                                            </Animated.View>
+                                                            <Animated.View style={[{ position: 'absolute', top: 0 }, { backfaceVisibility: 'hidden' }, RotateBackArr[1]]}>
+                                                                <Image style={styles.uif_card_img} source={item.path} />
+                                                            </Animated.View>
+                                                        </View>
+                                                    )
                                                 }
                                             })
                                         : null
@@ -455,17 +521,19 @@ const FateResultScreen = ({ route, navigation }) => {
                             <Text style={styles.uif_text}>일원</Text>
                         </View>
                         <View style={styles.uif_card_area}>
-                            <TouchableOpacity style={styles.uif_btn_card} onPress={onFateItemPress}>
+                            <TouchableOpacity style={styles.uif_btn_card} onPress={() => {
+                                doAFlip(2);
+                            }}>
                                 {
                                     fateCard.map(item => {
                                         return (item.name === fate.cd_hdganjee[0] ?
                                             (
                                                 <View key={item.name}>
-                                                    <Animated.View style={[{transform: [{rotateY:interpolationFront}]}, {backfaceVisibility: 'visible'}]}>
-                                                        <Image style={styles.uif_card_img} source={require('../assets/FateCard/back.png')} />           
+                                                    <Animated.View style={[RotateFrontArr[2], { backfaceVisibility: 'hidden' }]}>
+                                                        <Image style={styles.uif_card_img} source={require('../assets/FateCard/back.png')} />
                                                     </Animated.View>
-                                                    <Animated.View style={[{position: 'absolute', top: 0}, {backfaceVisibility: 'hidden'}]}>
-                                                        <Image style={styles.uif_card_img} source={item.path} />           
+                                                    <Animated.View style={[{ position: 'absolute', top: 0 }, { backfaceVisibility: 'hidden' }, RotateBackArr[2]]}>
+                                                        <Image style={styles.uif_card_img} source={item.path} />
                                                     </Animated.View>
                                                 </View>
                                             )
@@ -475,11 +543,22 @@ const FateResultScreen = ({ route, navigation }) => {
                             </TouchableOpacity>
                         </View>
                         <View style={styles.uif_card_area}>
-                            <TouchableOpacity style={styles.uif_btn_card} onPress={onFateItemPress}>
+                            <TouchableOpacity style={styles.uif_btn_card} onPress={() => {
+                                doAFlip(3);
+                            }}>
                                 {
                                     fateCard.map(item => {
                                         return (item.name === fate.cd_hdganjee[1] ?
-                                            <Image key={item.name} style={styles.uif_card_img} source={item.path} />
+                                            (
+                                                <View key={item.name}>
+                                                    <Animated.View style={[RotateFrontArr[3], { backfaceVisibility: 'hidden' }]}>
+                                                        <Image style={styles.uif_card_img} source={require('../assets/FateCard/back.png')} />
+                                                    </Animated.View>
+                                                    <Animated.View style={[{ position: 'absolute', top: 0 }, { backfaceVisibility: 'hidden' }, RotateBackArr[3]]}>
+                                                        <Image style={styles.uif_card_img} source={item.path} />
+                                                    </Animated.View>
+                                                </View>
+                                            )
                                             : null)
                                     })
                                 }
@@ -494,28 +573,59 @@ const FateResultScreen = ({ route, navigation }) => {
                             <Text style={styles.uif_text}>{getSixChin(fate.cd_hmganjee[0])}</Text>
                         </View>
                         <View style={styles.uif_card_area}>
-                            <TouchableOpacity style={styles.uif_btn_card} onPress={onFateItemPress}>
+                            <TouchableOpacity style={styles.uif_btn_card} onPress={() => {
+                                doAFlip(4);
+                            }}>
                                 {
                                     fateCard.map(item => {
                                         return (item.name === fate.cd_hmganjee[0] ?
-                                            <Image key={item.name} style={styles.uif_card_img} source={item.path} />
+                                            (
+                                                <View key={item.name}>
+                                                    <Animated.View style={[RotateFrontArr[4], { backfaceVisibility: 'hidden' }]}>
+                                                        <Image style={styles.uif_card_img} source={require('../assets/FateCard/back.png')} />
+                                                    </Animated.View>
+                                                    <Animated.View style={[{ position: 'absolute', top: 0 }, { backfaceVisibility: 'hidden' }, RotateBackArr[4]]}>
+                                                        <Image style={styles.uif_card_img} source={item.path} />
+                                                    </Animated.View>
+                                                </View>
+                                            )
                                             : null)
                                     })
                                 }
                             </TouchableOpacity>
                         </View>
                         <View style={styles.uif_card_area}>
-                            <TouchableOpacity style={styles.uif_btn_card} onPress={onFateItemPress}>
+                            <TouchableOpacity style={styles.uif_btn_card} onPress={() => {
+                                doAFlip(5);
+                            }}>
                                 {
                                     fateChangeArr.includes(fate.cd_hmganjee[1]) ?
                                         fateChangeMonthCard.map(item => {
                                             if (item.name === fate.cd_hmganjee[1]) {
-                                                return <Image key={item.name} style={styles.uif_card_img} source={item.path} />
+                                                return (
+                                                    <View key={item.name}>
+                                                        <Animated.View style={[RotateFrontArr[5], { backfaceVisibility: 'hidden' }]}>
+                                                            <Image style={styles.uif_card_img} source={require('../assets/FateCard/back.png')} />
+                                                        </Animated.View>
+                                                        <Animated.View style={[{ position: 'absolute', top: 0 }, { backfaceVisibility: 'hidden' }, RotateBackArr[5]]}>
+                                                            <Image style={styles.uif_card_img} source={item.path} />
+                                                        </Animated.View>
+                                                    </View>
+                                                )
                                             }
                                         }) :
                                         fateCard.map(item => {
                                             if (item.name === fate.cd_hmganjee[1]) {
-                                                return <Image key={item.name} style={styles.uif_card_img} source={item.path} />
+                                                return (
+                                                    <View key={item.name}>
+                                                        <Animated.View style={[RotateFrontArr[5], { backfaceVisibility: 'hidden' }]}>
+                                                            <Image style={styles.uif_card_img} source={require('../assets/FateCard/back.png')} />
+                                                        </Animated.View>
+                                                        <Animated.View style={[{ position: 'absolute', top: 0 }, { backfaceVisibility: 'hidden' }, RotateBackArr[5]]}>
+                                                            <Image style={styles.uif_card_img} source={item.path} />
+                                                        </Animated.View>
+                                                    </View>
+                                                )
                                             }
                                         })
                                 }
@@ -531,22 +641,44 @@ const FateResultScreen = ({ route, navigation }) => {
                                 <Text style={styles.uif_text}>{getSixChin(fate.cd_hyganjee[0])}</Text>
                             </View>
                             <View style={styles.uif_card_area}>
-                                <TouchableOpacity style={styles.uif_btn_card} onPress={onFateItemPress}>
+                                <TouchableOpacity style={styles.uif_btn_card} onPress={() => {
+                                    doAFlip(6);
+                                }}>
                                     {
                                         fateCard.map(item => {
                                             return (item.name === fate.cd_hyganjee[0] ?
-                                                <Image key={item.name} style={styles.uif_card_img} source={item.path} />
+                                                (
+                                                    <View key={item.name}>
+                                                        <Animated.View style={[RotateFrontArr[6], { backfaceVisibility: 'hidden' }]}>
+                                                            <Image style={styles.uif_card_img} source={require('../assets/FateCard/back.png')} />
+                                                        </Animated.View>
+                                                        <Animated.View style={[{ position: 'absolute', top: 0 }, { backfaceVisibility: 'hidden' }, RotateBackArr[6]]}>
+                                                            <Image style={styles.uif_card_img} source={item.path} />
+                                                        </Animated.View>
+                                                    </View>
+                                                )
                                                 : null)
                                         })
                                     }
                                 </TouchableOpacity>
                             </View>
                             <View style={styles.uif_card_area}>
-                                <TouchableOpacity style={styles.uif_btn_card} onPress={onFateItemPress}>
+                                <TouchableOpacity style={styles.uif_btn_card} onPress={() => {
+                                    doAFlip(7);
+                                }}>
                                     {
                                         fateCard.map(item => {
                                             return (item.name === fate.cd_hyganjee[1] ?
-                                                <Image key={item.name} style={styles.uif_card_img} source={item.path} />
+                                                (
+                                                    <View key={item.name}>
+                                                        <Animated.View style={[RotateFrontArr[7], { backfaceVisibility: 'hidden' }]}>
+                                                            <Image style={styles.uif_card_img} source={require('../assets/FateCard/back.png')} />
+                                                        </Animated.View>
+                                                        <Animated.View style={[{ position: 'absolute', top: 0 }, { backfaceVisibility: 'hidden' }, RotateBackArr[7]]}>
+                                                            <Image style={styles.uif_card_img} source={item.path} />
+                                                        </Animated.View>
+                                                    </View>
+                                                )
                                                 : null)
                                         })
                                     }
