@@ -15,8 +15,9 @@ import SocketInstance from '../components/Socket/Socket';
 import * as utils from "../components/etc/Util"
 import fateDB from '../assets/fate_.json'
 import Animated, { Easing, max } from 'react-native-reanimated';
+import firebase from '../firebaseconfig';
 
-const FateResultScreen = ({ route, navigation }) => {
+const FateResultScreen = ({ route, navigation }) => {    
     let { usersData } = route.params;
     // const [userDBArr, setUserDBArr] = useState([]);
     // const onlyOneCall = useRef(false);
@@ -413,6 +414,13 @@ const FateResultScreen = ({ route, navigation }) => {
             //     )
             // }
         }
+        function addUserData(user) {
+            const ref = firebase.firestore().collection('userData');
+            ref.add({
+                name: user.name,
+                gender: user.gender,
+            });
+        }
         return (
             <View key={JSON.stringify(user)} style={styles.user_info_wrap}>
                 <Text style={styles.ui_header_name}>{user.name} ({new Date().getFullYear() + 1 - user.bornDate.year}세)</Text>
@@ -746,44 +754,10 @@ const FateResultScreen = ({ route, navigation }) => {
                 </ScrollView>
                 <View style={styles.action_btn_group}>
                     <TouchableOpacity style={styles.ab_btn}
-                    // onPress={() => {
-                    //     if (user.solar === 1) {
-                    //         const solarDate = holidayKR.getSolar(user.bornDate.year, user.bornDate.month, user.bornDate.day);
-                    //         const newUser = {
-                    //             name: user.name,
-                    //             solar: user.solar,
-                    //             gender: user.gender,
-                    //             job: user.job,
-                    //             bornTime: user.bornTime,
-                    //             bornDate: {
-                    //                 year: solarDate.year,
-                    //                 month: solarDate.month,
-                    //                 day: solarDate.day
-                    //             }
-                    //         }
-                    //         SocketInstance.getInstance().send('RequestAddUser', newUser);
-                    //     }
-                    //     else {
-                    //         SocketInstance.getInstance().send('RequestAddUser', user);
-                    //     }
-                    //     SocketInstance.getInstance().send('RequestUserDB', "");
-                    //     SocketInstance.getInstance().setResponseUserDBCallback((res) => {
-                    //         let newArr = [...userDBArr];
-                    //         utils.globalUserDBArr = [];
-                    //         res.map(item => {
-                    //             if (!userDBArr.includes(item.name)) {
-                    //                 newArr.push(item.name)
-                    //             } else {
-                    //                 newArr.map(naItem => {
-                    //                     naItem = item.name
-                    //                 })
-                    //             }
-                    //             utils.globalUserDBArr.push(item.name);
-                    //         })
-                    //         setUserDBArr(newArr);
-                    //     })
-                    // }}
-                    >
+                        onPress={() => {
+                            addUserData(user)
+                        }}
+                     >
                         <Text style={styles.ab_btn_text}>저장</Text>
                     </TouchableOpacity>
                     {renderRemoveDB()}
