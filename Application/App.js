@@ -14,6 +14,7 @@ import FateResultScreen from './pages/FateResultScreen';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import * as firebase from 'firebase';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
