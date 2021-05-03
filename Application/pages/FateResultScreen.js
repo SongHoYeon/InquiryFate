@@ -16,6 +16,9 @@ import * as utils from "../components/etc/Util"
 import fateDB from '../assets/fate_.json'
 import Animated, { Easing, max } from 'react-native-reanimated';
 import firebase from '../firebaseconfig';
+import uuid from 'react-native-uuid'
+import AsyncStorage from '@react-native-community/async-storage';
+
 
 const FateResultScreen = ({ route, navigation }) => {    
     let { usersData } = route.params;
@@ -415,10 +418,25 @@ const FateResultScreen = ({ route, navigation }) => {
             // }
         }
         function addUserData(user) {
-            const ref = firebase.firestore().collection('userData');
-            ref.add({
+            var gender_str;
+            if(user.gender == 0) { gender_str = "남자" } 
+            else if(user.gender == 1) { gender_str = "여자"} 
+            var job_str;
+            if(user.job == 0) { job_str = "학생" } 
+            else if(user.job == 1) { job_str = "개발자"} 
+            else if(user.job == 2) { job_str = "기획자"}
+            else if(user.job == 3) { job_str = "디자이너"} 
+
+            var userId = JSON.parse(localStorage.getItem("uuid"))
+            console.log(userId);
+
+            firebase.firestore().collection('userData').doc(userId).set({
                 name: user.name,
-                gender: user.gender,
+                gender: gender_str,
+                bornDate : user.bornDate,
+                bornTime : user.bornTime,
+                job : job_str,
+                savetime : new Date()
             });
         }
         return (

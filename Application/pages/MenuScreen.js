@@ -11,6 +11,9 @@ import {
 } from 'react-native';
 import * as utils from "../components/etc/Util"
 import { useRef, useState } from 'react/cjs/react.development';
+import 'localstorage-polyfill';
+import uuid from 'react-native-uuid'
+import firebase from '../firebaseconfig';
 
 const MenuScreen = ({ navigation }) => {
     return (
@@ -20,6 +23,14 @@ const MenuScreen = ({ navigation }) => {
                 <TouchableOpacity
                     style={[styles.container_button, styles.cb_search]}
                     onPress={() => {
+                        let isUUid = JSON.parse(localStorage.getItem("uuid"))
+                        if( !isUUid ){
+                            console.log("321321")
+                            const userId = uuid.v4();
+                            localStorage.setItem('uuid', JSON.stringify(userId));
+                        } else {
+                            console.log(isUUid)
+                        }
                         navigation.navigate('Search')
                     }}>
                     <Text>만세력</Text>
@@ -36,6 +47,16 @@ const MenuScreen = ({ navigation }) => {
                         //     })
                         //     navigation.navigate('Database', { userDataRes: res })
                         // })
+                        let userId = JSON.parse(localStorage.getItem("uuid"))
+                        firebase.firestore().collection('userData').doc(userId).get().then((doc) => {
+                            if (doc.exists) {
+                                console.log("Document data:", doc.data());
+                            } else {
+                                
+                            }
+                        }).catch((error) => {
+                            console.log(error)
+                        });
                     }}>
                     <Text>DataBase</Text>
                 </TouchableOpacity>
@@ -52,10 +73,13 @@ const MenuScreen = ({ navigation }) => {
                 {/* Button TodayCard */}
                 <TouchableOpacity
                     style={styles.container_button}
-                    onPress={() =>
+                    onPress={() =>{
                         // navigation.navigate('SettingsStack', { screen: 'Settings' })
-                        alert("준비중")
-                    }>
+                        //alert("준비중")
+                        let userId = JSON.parse(localStorage.getItem("uuid"))
+                        firebase.firestore().collection('userData').doc(userId).delete();
+                        console.log("삭제되었습니다.")
+                    }}>
                     <Text>일진카드 뽑기</Text>
                 </TouchableOpacity>
             </View>
