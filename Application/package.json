@@ -33,6 +33,7 @@
     "react-native-calendars": "^1.1254.0",
     "react-native-customize-selected-date": "^1.0.1",
     "react-native-gesture-handler": "^1.10.1",
+    "react-native-lunar-calendars": "^2.0.4",
     "react-native-modal": "^11.6.1",
     "react-native-radio-button-group": "^1.0.3",
     "react-native-radio-buttons-group": "^1.0.7",

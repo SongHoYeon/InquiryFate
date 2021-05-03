@@ -795,8 +795,6 @@ const FateResultScreen = ({ route, navigation }) => {
         <SafeAreaView style={styles.container}>
             <ScrollView style={styles.contents}>
                 {
-
-
                     usersData.map((item, i) => {
                         let targetDay = new Date(item.bornDate.year, item.bornDate.month - 1, item.bornDate.day);
 
