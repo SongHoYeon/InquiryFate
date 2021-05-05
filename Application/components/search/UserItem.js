@@ -17,7 +17,6 @@ const UserItem = ({ index, initialValue, onChange, onRemove }) => {
     const idx = index;
     // InputValues //
     const [name, setName] = useState(initialValue.name);
-    // gender = 0 : 남자 / 1 : 여자
     const [gender, setGender] = useState(initialValue.gender);
     // solar = 0 : 양력 / 1 : 음력 / 2 : 음력윤달
     const [solar, setSolar] = useState(initialValue.solar);
@@ -28,7 +27,7 @@ const UserItem = ({ index, initialValue, onChange, onRemove }) => {
     const [bornTimeType, setBornTimeType] = useState(0);
     const [bornTime, setBornTime] = useState(initialValue.bornTime);
     // job = 0 : 학생 / 1 : 개발자 / 2 : 기획자 / 3 : 디자이너
-    const [job, setJob] = useState(0);
+    const [job, setJob] = useState("학생");
 
     const [selectModalPopupVisible, setSelectModalPopupVisible] = useState(false);
     const selectModalItems = useRef([]);
@@ -63,12 +62,7 @@ const UserItem = ({ index, initialValue, onChange, onRemove }) => {
             return <Text style={styles.ia_btn_text}>출생시 불명</Text>
     }
     const _selectJob_BtnText = () => {
-        if (job === 0)
-            return <Text style={styles.ia_btn_text}>학생</Text>
-        else if (job === 1)
-            return <Text style={styles.ia_btn_text}>개발자</Text>
-        else if (job === 2)
-            return <Text style={styles.ia_btn_text}>디자이너</Text>
+        return <Text style={styles.ia_btn_text}>{job}</Text>
     }
     const _updateBornDate = (key, value) => {
         setBornDate({
@@ -167,20 +161,19 @@ const UserItem = ({ index, initialValue, onChange, onRemove }) => {
                 </View>
                 <View style={styles.ia_group}>
                     <Text style={styles.ia_title}>성별</Text>
-                    <RadioButtonContainer values={[
-                        { text: "남자", },
-                        { text: "여자", }]}
+                    <RadioButtonContainer
+                        values={["남자", "여자"]}
                         init={gender}
-                        onPress={(idx) => setGender(idx)} />
+                        onPress={(item) => {
+                            setGender(item)
+                        }} 
+                        />
                 </View>
                 <View style={styles.ia_group}>
                     <Text style={styles.ia_title}>양/음력</Text>
-                    <RadioButtonContainer values={[
-                        { text: "양력", },
-                        { text: "음력", },
-                        { text: "음력윤달", }]}
-                        init={solar}
-                        onPress={(idx) => setSolar(idx)} />
+                    <RadioButtonContainer values={["양력","음력","음력윤달"]}
+                        init={"양력"}
+                        onPress={(item) => setSolar(item)} />
                 </View>
                 <View style={styles.ia_group}>
                     <Text style={styles.ia_title}>출생정보</Text>
@@ -219,7 +212,9 @@ const UserItem = ({ index, initialValue, onChange, onRemove }) => {
                             style={styles.ia_btn_modal}
                             onPress={() => {
                                 selectModalItems.current = ["학생", "개발자", "디자이너"]
-                                selectModalItemCallback.current = (idx) => setJob(idx);
+                                selectModalItemCallback.current = (idx) => {
+                                    setJob(selectModalItems.current[idx]);
+                                }
                                 setSelectModalPopupVisible(true)
                             }}>
                             {_selectJob_BtnText()}

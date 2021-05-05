@@ -12,23 +12,41 @@ import SocketInstance from '../components/Socket/Socket';
 import DatabaseItem from '../components/database/DatabaseItem';
 import { DefaultModalPopup } from '../components/etc/ModalPopup';
 import * as utils from "../components/etc/Util"
+import firebase from '../firebaseconfig';
+import 'localstorage-polyfill';
 
 const DatabaseScreen = ({ route, navigation }) => {
-    const { userDataRes } = route.params;
+    // const { userDataRes } = route.params;
     const [currentSelectedItem, setCurrentSelectedItem] = useState(-1);
     const [defaultModalPopupVisible, setDefaultModalPopupVisible] = useState(false);
     const defaultPopupMessage = useRef("");
-    const [userDBArr, setUserDBArr] = useState([]);
-    const onlyOneCall = useRef(false);
 
-    if (!onlyOneCall.current) {
-        let newArr = userDataRes.map(item => {
-            return item.name;
-        })
-        setUserDBArr(newArr)
-        onlyOneCall.current = true
-    }
-
+    const [idArr, setIdArr] = useState(JSON.parse(localStorage.getItem("ids")));
+    const [dataArr, setDataArr] = useState([]);
+    useEffect(() => {
+        if (idArr != null) {
+            let newArr = [];
+            let onLoadData = false;
+            idArr.map((item, idx) => {
+                firebase.firestore().collection('userData').doc("ID_" + item).get().then((doc) => {
+                    if (doc.exists) {
+                        newArr.push(doc.data())
+                        if (idArr.length === idx + 1)
+                            onLoadData = true;
+                    }
+                }).catch((error) => {
+                    console.log(error)
+                });
+            })
+            const timer = setInterval(() => {
+                if (onLoadData) {
+                    setDataArr(newArr)
+                    clearInterval(timer);
+                }
+            }, 100);
+    
+        }
+    }, [idArr]);
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.option_group}>
@@ -46,9 +64,10 @@ const DatabaseScreen = ({ route, navigation }) => {
                             setDefaultModalPopupVisible(true)
                             defaultPopupMessage.current = "삭제할 데이터가 없습니다."
                         } else {
-                            setUserDBArr(userDBArr.filter(item => item !== userDataRes[currentSelectedItem].name))
+                            const newArr = idArr.filter(item => item !== idArr[currentSelectedItem]);
+                            setIdArr(newArr)
+                            localStorage.setItem('ids', JSON.stringify(newArr))
                             setCurrentSelectedItem(-1);
-                            SocketInstance.getInstance().send('RequestRemoveUser', userDataRes[currentSelectedItem].name);
                         }
                     }}>
                     <Text style={styles.btn_option_text}>삭제</Text>
@@ -75,11 +94,9 @@ const DatabaseScreen = ({ route, navigation }) => {
             <ScrollView style={styles.contents}>
                 <View style={styles.data_list}>
                     {
-                        userDataRes.map((item, i) => {
-                            if (userDBArr.includes(item.name)) {
-                                let isChecked = currentSelectedItem === i ? true : false;
-                                return <DatabaseItem key={item.name} info={item} onItemPress={() => setCurrentSelectedItem(i)} isChecked={isChecked} />
-                            }
+                        dataArr.map((item, i) => {
+                            let isChecked = currentSelectedItem === i ? true : false;
+                            return <DatabaseItem key={item.name} info={item} onItemPress={() => setCurrentSelectedItem(i)} isChecked={isChecked} />
                         })
                     }
                 </View>
@@ -94,21 +111,18 @@ const DatabaseScreen = ({ route, navigation }) => {
                         }
                         else {
                             const currentUserData = [{
-                                name: userDataRes[currentSelectedItem].name,
-                                gender: userDataRes[currentSelectedItem].gender,
-                                job: userDataRes[currentSelectedItem].job,
+                                name: dataArr[currentSelectedItem].name,
+                                gender: dataArr[currentSelectedItem].gender,
+                                job: dataArr[currentSelectedItem].job,
                                 bornDate: {
-                                    year: userDataRes[currentSelectedItem].bornDate.split('-')[0],
-                                    month: userDataRes[currentSelectedItem].bornDate.split('-')[1],
-                                    day: userDataRes[currentSelectedItem].bornDate.split('-')[2]
+                                    year: dataArr[currentSelectedItem].bornDate.year,
+                                    month: dataArr[currentSelectedItem].bornDate.month,
+                                    day: dataArr[currentSelectedItem].bornDate.day
                                 },
-                                bornTime: userDataRes[currentSelectedItem].bornTime,
-                                solar: 0,
+                                bornTime: dataArr[currentSelectedItem].bornTime,
+                                solar: "양력",
                             }]
-                            SocketInstance.getInstance().send('RequestGetFate', currentUserData);
-                            SocketInstance.getInstance().setResponseGetFateCallback((res) => {
-                                navigation.navigate('FateResult', { usersData: currentUserData, fateRes: res.fate, bigFateRes: res.bigFate, yearsData: res.allYears, monthsData: res.threeMonths})
-                            })
+                            navigation.navigate('FateResult', { usersData: currentUserData});
                         }
                     }}>
                     <Text style={styles.btn_text}>조회하기</Text>

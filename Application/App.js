@@ -5,7 +5,7 @@ import {
     Text,
     View
 } from 'react-native';
-
+import AsyncStorage from '@react-native-community/async-storage';
 import MenuScreen from './pages/MenuScreen';
 import SearchScreen from './pages/SearchScreen';
 import DatabaseScreen from './pages/DatabaseScreen';
@@ -14,7 +14,6 @@ import FateResultScreen from './pages/FateResultScreen';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 

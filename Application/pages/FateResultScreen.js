@@ -16,18 +16,13 @@ import * as utils from "../components/etc/Util"
 import fateDB from '../assets/fate_.json'
 import Animated, { Easing, max } from 'react-native-reanimated';
 import firebase from '../firebaseconfig';
-import uuid from 'react-native-uuid'
+import 'localstorage-polyfill';
 import AsyncStorage from '@react-native-community/async-storage';
 
 
-const FateResultScreen = ({ route, navigation }) => {    
+const FateResultScreen = ({ route, navigation }) => {
     let { usersData } = route.params;
-    // const [userDBArr, setUserDBArr] = useState([]);
-    // const onlyOneCall = useRef(false);
-    // if (!onlyOneCall.current) {
-    //     setUserDBArr(utils.globalUserDBArr);
-    //     onlyOneCall.current = true
-    // }
+    const [idArr, setIdArr] = useState(JSON.parse(localStorage.getItem("ids")));
     const [defaultModalPopupVisible, setDefaultModalPopupVisible] = useState(false);
     const defaultPopupMessage = useRef("");
     const fateCard = [
@@ -243,7 +238,7 @@ const FateResultScreen = ({ route, navigation }) => {
                 earthStartIdx_big = i;
         });
         const getBornText = () => {
-            if (user.solar === 0) {
+            if (user.solar === "양력") {
                 const lunarDate = holidayKR.getLunar(user.bornDate.year, user.bornDate.month, user.bornDate.day);
                 return (
                     <View style={styles.uib_bornDate_area}>
@@ -405,45 +400,55 @@ const FateResultScreen = ({ route, navigation }) => {
             )
         }
         const renderRemoveDB = () => {
-            // if (userDBArr.includes(user.name)) {
-            //     return (
-            //         <TouchableOpacity style={styles.ab_btn} onPress={() => {
-            //             setUserDBArr(userDBArr.filter(item => item !== user.name));
-            //             SocketInstance.getInstance().send('RequestRemoveUser', user.name);
-            //             utils.globalUserDBArr = utils.globalUserDBArr.filter(item=> item !== user.name)
-            //         }}>
-            //             <Text style={styles.ab_btn_text}>삭제</Text>
-            //         </TouchableOpacity>
-            //     )
-            // }
+            if (idArr != null && idArr.includes(user.name)) {
+                return (
+                    <TouchableOpacity style={styles.ab_btn} onPress={() => {
+                        const newArr = idArr.filter(item => item !== user.name);
+                        setIdArr(newArr)
+                        localStorage.setItem('ids', JSON.stringify(newArr))
+                    }}>
+                        <Text style={styles.ab_btn_text}>삭제</Text>
+                    </TouchableOpacity>
+                )
+            } else {
+                return (
+                    <TouchableOpacity style={styles.ab_btn}
+                        onPress={() => {
+                            addUserData(user)
+                        }}>
+                        <Text style={styles.ab_btn_text}>저장</Text>
+                    </TouchableOpacity>
+                )
+            }
         }
         function addUserData(user) {
-            var gender_str;
-            if(user.gender == 0) { gender_str = "남자" } 
-            else if(user.gender == 1) { gender_str = "여자"} 
-            var job_str;
-            if(user.job == 0) { job_str = "학생" } 
-            else if(user.job == 1) { job_str = "개발자"} 
-            else if(user.job == 2) { job_str = "기획자"}
-            else if(user.job == 3) { job_str = "디자이너"} 
-
-            var userId = JSON.parse(localStorage.getItem("uuid"))
-            console.log(userId);
-
-            firebase.firestore().collection('userData').doc(userId).set({
+            console.log("FireStore Upload Id : " + "ID_" + user.name)
+            const currentDate = new Date();
+            const time = currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate();
+            const saveData = {
                 name: user.name,
-                gender: gender_str,
-                bornDate : user.bornDate,
-                bornTime : user.bornTime,
-                job : job_str,
-                savetime : new Date()
-            });
+                gender: user.gender,
+                bornDate: user.bornDate,
+                bornTime: user.bornTime,
+                job: user.job,
+                saveTime: time
+            }
+            firebase.firestore().collection('userData').doc("ID_" + user.name).set(saveData);
+
+            let idArr = JSON.parse(localStorage.getItem("ids"))
+            if (!idArr) {
+                idArr = [];
+            }
+            if (!idArr.includes(user.name))
+                idArr.push(user.name);
+            setIdArr(idArr);
+            localStorage.setItem('ids', JSON.stringify(idArr))
         }
         return (
             <View key={JSON.stringify(user)} style={styles.user_info_wrap}>
                 <Text style={styles.ui_header_name}>{user.name} ({new Date().getFullYear() + 1 - user.bornDate.year}세)</Text>
                 <View style={styles.ui_base_group}>
-                    <View style={styles.uib_box}><Text style={styles.uib_gender}>{user.gender === 0 ? "남자" : "여자"}</Text></View>
+                    <View style={styles.uib_box}><Text style={styles.uib_gender}>{user.gender}</Text></View>
                     {getBornText()}
                     <View style={styles.uib_box}>
                         <Text style={styles.uib_bornTime}>{user.bornTime === '-' ? "" :
@@ -771,13 +776,6 @@ const FateResultScreen = ({ route, navigation }) => {
                     }
                 </ScrollView>
                 <View style={styles.action_btn_group}>
-                    <TouchableOpacity style={styles.ab_btn}
-                        onPress={() => {
-                            addUserData(user)
-                        }}
-                     >
-                        <Text style={styles.ab_btn_text}>저장</Text>
-                    </TouchableOpacity>
                     {renderRemoveDB()}
                 </View>
             </View>

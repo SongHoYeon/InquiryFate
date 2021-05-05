@@ -16,9 +16,9 @@ import * as utils from "../components/etc/Util"
 const SearchScreen = ({ navigation }) => {
     const initialUserInfo = {
         name: "",
-        gender: 0,
-        solar: 0,
-        job: 0,
+        gender: "남자",
+        solar: "양력",
+        job: "학생",
         bornDate: {
             year: "2000",
             month: "1",
@@ -69,7 +69,7 @@ const SearchScreen = ({ navigation }) => {
                     onPress={() => {
                         let newUsers = [...users];
                         newUsers.map(item => {
-                            if (item.solar === 1) {
+                            if (item.solar === "음력") {
                                 const year = item.bornDate.year;
                                 const month = item.bornDate.month;
                                 const day = item.bornDate.day;
@@ -79,7 +79,7 @@ const SearchScreen = ({ navigation }) => {
                                     month : solarDate.month,
                                     day : solarDate.day
                                 }
-                                item.solar = 0
+                                item.solar = "양력"
                             }
                         })
                         navigation.navigate('FateResult', { usersData: newUsers});

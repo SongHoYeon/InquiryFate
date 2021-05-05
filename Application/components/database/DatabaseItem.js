@@ -12,10 +12,10 @@ import {
 } from 'react-native';
 
 const DatabaseItem = ({ info, onItemPress, isChecked }) => {
-    const getBornDate = (bornData) => {
-        const year = bornData.split('-')[0];
-        const month = bornData.split('-')[1];
-        const day = bornData.split('-')[2];
+    const getBornDate = (date) => {
+        const year = date.year;
+        const month = date.month;
+        const day = date.day;
         const lunarDate = holidayKR.getLunar(year, month, day);
         return (
             <View style={styles.birth}>
@@ -40,7 +40,7 @@ const DatabaseItem = ({ info, onItemPress, isChecked }) => {
             {getBornDate(info.bornDate)}
             <View style={styles.born}>
                 <Text style={styles.born_text}>{info.bornTime}</Text>
-                <Text style={styles.born_text}>{info.gender === 0 ? "남자" : "여자"}</Text>
+                <Text style={styles.born_text}>{info.gender}</Text>
             </View>
             <View style={styles.save}>
                 <Text style={styles.save_text}>{utils.numberPad(info.saveTime.split('-')[0], 2)}-{utils.numberPad(info.saveTime.split('-')[1], 2)}-{utils.numberPad(info.saveTime.split('-')[2], 2)}</Text>
