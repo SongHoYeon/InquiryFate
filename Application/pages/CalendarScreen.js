@@ -7,10 +7,8 @@ import holidayKR from "holiday-kr";
 import { Calendar, CalendarList, Agenda } from 'react-native-calendars';
 
 const CalendarScreen = () => {
-    // const socket = SocketInstance.getInstance();
     const [defaultModalPopupVisible, setDefaultModalPopupVisible] = useState(false);
     const defaultPopupMessage = useRef("");
-    const time = '';
     const numberPad = (n, width) => {
         n = n + '';
         return n.length >= width ? n : new Array(width - n.length + 1).join('0') + n;

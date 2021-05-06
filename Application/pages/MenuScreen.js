@@ -12,12 +12,61 @@ import {
 import * as utils from "../components/etc/Util"
 import { useRef, useState } from 'react/cjs/react.development';
 import 'localstorage-polyfill';
-import uuid from 'react-native-uuid'
 import firebase from '../firebaseconfig';
+import Spinner from 'react-native-loading-spinner-overlay';
+import fateDB from '../assets/fate_.json'
 
 const MenuScreen = ({ navigation }) => {
+    const [spinner, setSpinner] = useState(false);
+    const date = new Date();
+    const currentYear = date.getFullYear();
+    const currentMonth = date.getMonth() + 1;
+    const currentDate = date.getDate();
+
+
+    const setYMD = () => {
+        const prevMonth = date.getMonth() === 0 ? 12 : date.getMonth();
+        const nextMonth = date.getMonth() + 2 === 13 ? 1 : date.getMonth();
+        if (JSON.parse(localStorage.getItem("ymd_" + currentYear + currentMonth)) === null) {
+            const ymd = fateDB.fate.filter(fate => fate.cd_sy === currentYear && fate.cd_sm === currentMonth.toString());
+            localStorage.setItem("ymd_" + currentYear + currentMonth, JSON.stringify(ymd))
+        }
+        if (JSON.parse(localStorage.getItem("ymd_" + currentYear + prevMonth)) === null) {
+            const ymd = fateDB.fate.filter(fate => fate.cd_sy === currentYear && fate.cd_sm === prevMonth.toString());
+            localStorage.setItem("ymd_" + currentYear + prevMonth, JSON.stringify(ymd))
+        }
+        if (JSON.parse(localStorage.getItem("ymd_" + currentYear + nextMonth)) === null) {
+            const ymd = fateDB.fate.filter(fate => fate.cd_sy === currentYear && fate.cd_sm === nextMonth.toString());
+            localStorage.setItem("ymd_" + currentYear + nextMonth, JSON.stringify(ymd))
+        }
+    }
+    const setYM = () => {
+        for (let i = 1900; i < 2100 ; i ++) {
+            if (JSON.parse(localStorage.getItem("ym_" + i)) === null) {
+                const ym = fateDB.fate.filter(fate => fate.cd_sy === i && fate.cd_sd === (15).toString());
+                localStorage.setItem("ym_" + i, JSON.stringify(ym))
+            }
+        }
+    }
+
+    async function setNearDate() {
+        console.log("Start " + new Date().getSeconds());
+        await setYMD();
+        await setYM();
+
+        // localStorage.setItem('ids', JSON.stringify(idArr))
+        console.log("End " + new Date().getSeconds());
+    }
+
+
+    setNearDate();
     return (
         <SafeAreaView style={styles.container}>
+            <Spinner
+                visible={false}
+                textContent={'Loading...'}
+                textStyle={{ color: "#fff" }}
+            />
             <View style={styles.container_row}>
                 {/* Button Search */}
                 <TouchableOpacity
@@ -50,8 +99,7 @@ const MenuScreen = ({ navigation }) => {
                 <TouchableOpacity
                     style={styles.container_button}
                     onPress={() => {
-                        // navigation.navigate('Calendar')
-                        localStorage.clear();
+                        navigation.navigate('Calendar')
                     }}>
                     <Text>오늘의 일진(임시 달력)</Text>
                 </TouchableOpacity>
