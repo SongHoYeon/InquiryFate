@@ -9,9 +9,8 @@ import {
     Image,
 } from 'react-native';
 import { DefaultModalPopup } from '../components/etc/ModalPopup';
-import { useRef } from 'react/cjs/react.development';
+import { useRef, useEffect } from 'react/cjs/react.development';
 import holidayKR from "holiday-kr";
-import SocketInstance from '../components/Socket/Socket';
 import * as utils from "../components/etc/Util"
 import fateDB from '../assets/fate_.json'
 import Animated, { Easing, max } from 'react-native-reanimated';
@@ -227,6 +226,22 @@ const FateResultScreen = ({ route, navigation }) => {
     };
 
     const userDataItem = (user, fate, bigFate) => {
+        const bigFateTargetIdx = useRef(-1);
+        const bigFateScroll = useRef();
+        const yearFateTargetIdx = useRef(-1);
+        const yearFateScroll = useRef();
+        const monthFateTargetIdx = useRef(-1);
+        const monthFateScroll = useRef();
+        useEffect(() => {
+            bigFateScroll.current.scrollTo({x : (12-bigFateTargetIdx.current) * 45, y : 0, animated:true})
+        }, [bigFateTargetIdx]);
+        useEffect(() => {
+            yearFateScroll.current.scrollTo({x : (yearFateTargetIdx.current) * 60 - 180, y : 0, animated:true})
+        }, [yearFateTargetIdx]);
+        useEffect(() => {
+            monthFateScroll.current.scrollTo({x : (monthFateTargetIdx.current) * 40- 200, y : 0, animated:true})
+        }, [monthFateTargetIdx]);
+
         let skyStartIdx_big = 0
         let earthStartIdx_big = 0;
         utils.skyArr.map((item, i) => {
@@ -350,12 +365,22 @@ const FateResultScreen = ({ route, navigation }) => {
             }
             const skyHz = utils.skyArr[skyHzIdx];
             const earthHz = utils.earthArr[earthHzIdx];
+            const age = idx == 0 ? bigFate.startAge.toFixed(1) : Math.round(bigFate.startAge) + idx * 10;
+            let isCurrentFate = false;
+            const currentAge = new Date().getFullYear() + 1 - user.bornDate.year;
+            if (idx === 0 && currentAge < age) {
+                isCurrentFate = true;
+                bigFateTargetIdx.current = idx;
+            }
+            else if (currentAge >= age && Math.round(bigFate.startAge) + (idx + 1) * 10 > currentAge) {
+                isCurrentFate = true;
+                bigFateTargetIdx.current = idx;
+            }
+
             return (
-                <View key={idx} style={styles.uibf_box}>
+                <View key={age} style={[styles.uibf_box, isCurrentFate ? { backgroundColor: 'red' } : {}]}>
                     <View style={styles.uibf_age}>
-                        <Text style={styles.uibf_age_text}>{
-                            idx == 0 ? bigFate.startAge.toFixed(1) : Math.round(bigFate.startAge) + idx * 10
-                        }</Text>
+                        <Text style={styles.uibf_age_text}>{age}</Text>
                     </View>
                     <View style={styles.uibf_hz_box}>
                         <Text style={styles.uibf_hz_text}>{skyHz}</Text>
@@ -366,9 +391,12 @@ const FateResultScreen = ({ route, navigation }) => {
                 </View>
             )
         }
-        const getYearFateList = (yearData) => {
+        const getYearFateList = (yearData, idx) => {
+            const isCurrentYear = yearData.cd_sy === currentDate.getFullYear() ? true : false;
+            if (isCurrentYear)
+                yearFateTargetIdx.current = idx;
             return (
-                <View key={yearData.cd_sy} style={styles.uiyf_box}>
+                <View key={yearData.cd_sy} style={[styles.uiyf_box, isCurrentYear ? { backgroundColor: 'red' } : {}]}>
                     <View style={styles.uiyf_age}>
                         <Text style={styles.uiyf_age_text}>{yearData.cd_sy}</Text>
                     </View>
@@ -384,17 +412,20 @@ const FateResultScreen = ({ route, navigation }) => {
                 </View>
             )
         }
-        const getMonthFateList = (monthData) => {
+        const getMonthFateList = (monthData, idx) => {
+            const isCurrentMonth = monthData.cd_sy === currentDate.getFullYear() && monthData.cd_sm === (currentDate.getMonth() + 1).toString() ? true : false;
+            if (isCurrentMonth)
+                monthFateTargetIdx.current = idx;
             return (
-                <View key={monthData.cd_hmganjee} style={[styles.uimf_box, monthData.cd_sy === currentDate.getFullYear() && monthData.cd_sm === (currentDate.getMonth() + 1).toString() ? { backgroundColor: 'red' } : {}]}>
+                <View key={monthData.cd_hmganjee} style={[styles.uimf_box]}>
                     <View style={styles.uimf_hz_box}>
                         <Text style={styles.uimf_hz_text}>{monthData.cd_hmganjee[0]}</Text>
                     </View>
                     <View style={styles.uimf_hz_box}>
                         <Text style={styles.uimf_hz_text}>{monthData.cd_hmganjee[1]}</Text>
                     </View>
-                    <View style={styles.uimf_age}>
-                        <Text style={styles.uimf_age_text}>{monthData.cd_sm}</Text>
+                    <View style={[styles.uimf_age, isCurrentMonth ? { backgroundColor: 'blue' } : {}]}>
+                        <Text style={[styles.uimf_age_text,  isCurrentMonth ? { color: 'white' } : {}]}>{monthData.cd_sm}</Text>
                     </View>
                 </View>
             )
@@ -752,26 +783,26 @@ const FateResultScreen = ({ route, navigation }) => {
                         <Text style={styles.uij_text}>{getJijange(fate.cd_hyganjee[1])}</Text>
                     </View>
                 </View>
-                <ScrollView horizontal={true} style={styles.ui_bigfate_list}>
+                <ScrollView horizontal={true} style={styles.ui_bigfate_list} ref = {bigFateScroll}>
                     {
                         bigFateAgeArr.map((item, i) => {
                             return getBigFateList(12 - i)
                         })
                     }
                 </ScrollView>
-                <ScrollView horizontal={true} style={styles.ui_yearfate_list}>
+                <ScrollView horizontal={true} style={styles.ui_yearfate_list} ref = {yearFateScroll}>
                     {
-                        utils.allYears.map((item) => {
-                            if (item.cd_sy >= user.bornDate.year && item.cd_sy < user.bornDate.year + 110) {
-                                return getYearFateList(item);
+                        utils.allYears.map((item, idx) => {
+                            if (item.cd_sy >= user.bornDate.year) {
+                                return getYearFateList(item, idx);
                             }
                         })
                     }
                 </ScrollView>
-                <ScrollView horizontal={true} style={styles.ui_monthfate_list}>
+                <ScrollView horizontal={true} style={styles.ui_monthfate_list} ref = {monthFateScroll}>
                     {
-                        threeYears.map((item) => {
-                            return getMonthFateList(item);
+                        threeYears.map((item, idx) => {
+                            return getMonthFateList(item, idx);
                         })
                     }
                 </ScrollView>
@@ -816,7 +847,7 @@ const FateResultScreen = ({ route, navigation }) => {
                         let bigFate;
                         let bigFate_isLinear;
                         let bigFate_startAge = 0;
-                        if (item.gender === 0) {
+                        if (item.gender === "남자") {
                             utils.hzArr.map(hzItem => {
                                 if (hzItem.hz === fate.cd_hyganjee[0]) {
                                     if (hzItem.lightness === 'light')
@@ -1004,11 +1035,13 @@ const styles = StyleSheet.create({
     uibf_box: {
         borderLeftColor: '#7d7f85',
         borderLeftWidth: 1,
+        width: 45,
     },
     uibf_age: {
         paddingHorizontal: 10,
         borderBottomColor: '#7d7f85',
         borderBottomWidth: 1,
+        alignItems: 'center'
     },
     uibf_hz_box: {
         borderLeftColor: '#7d7f85',
@@ -1028,6 +1061,7 @@ const styles = StyleSheet.create({
     uiyf_box: {
         borderLeftColor: '#7d7f85',
         borderLeftWidth: 1,
+        width: 60,
     },
     uiyf_age: {
         paddingHorizontal: 10,
@@ -1056,6 +1090,7 @@ const styles = StyleSheet.create({
     uimf_box: {
         borderLeftColor: '#7d7f85',
         borderLeftWidth: 1,
+        width: 40,
     },
     uimf_age: {
         paddingHorizontal: 10,

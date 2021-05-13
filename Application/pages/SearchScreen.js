@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import holidayKR from "holiday-kr";
 import UserItem from '../components/search/UserItem';
-import { useRef, useState } from 'react/cjs/react.development';
+import { useRef, useEffect, useState } from 'react/cjs/react.development';
 import * as utils from "../components/etc/Util"
 
 const SearchScreen = ({ navigation }) => {
