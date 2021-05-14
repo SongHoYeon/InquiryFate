@@ -12,7 +12,6 @@ import holidayKR from "holiday-kr";
 import UserItem from '../components/search/UserItem';
 import { useRef, useState } from 'react/cjs/react.development';
 import * as utils from "../components/etc/Util"
-import {BottomBannerAd} from '../AdBanner'
 
 const SearchScreen = ({ navigation }) => {
     const initialUserInfo = {
@@ -104,7 +103,6 @@ const SearchScreen = ({ navigation }) => {
                     <Text style={styles.btn_text}>추가</Text>
                 </TouchableOpacity>
             </View>
-            <BottomBannerAd/>
         </SafeAreaView>
     );
 };
